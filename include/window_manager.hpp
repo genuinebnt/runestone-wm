@@ -18,14 +18,14 @@ private:
   static auto OnXError(Display *display, XErrorEvent *e) -> int;
   static auto OnWMDectected(Display *display, XErrorEvent *e) -> int;
 
-  auto OnCreateNotify(const XCreateWindowEvent &e) -> void;
-  auto OnDestroyNotify(const XDestroyWindowEvent &e) -> void;
+  auto OnCreateNotify(const XCreateWindowEvent &e) const -> void;
+  auto OnDestroyNotify(const XDestroyWindowEvent &e) const -> void;
   auto OnConfigureRequest(const XConfigureRequestEvent &e) -> void;
-  auto OnConfigureNotify(const XConfigureEvent &e) -> void;
+  auto OnConfigureNotify(const XConfigureEvent &e) const -> void;
   auto OnMapRequest(const XMapRequestEvent &e) -> void;
-  auto OnMapNotify(const XMapEvent &e) -> void;
+  auto OnMapNotify(const XMapEvent &e) const -> void;
   auto OnUnmapNotify(const XUnmapEvent &e) -> void;
-  auto OnReparentNotify(const XReparentEvent &e) -> void;
+  auto OnReparentNotify(const XReparentEvent &e) const -> void;
   auto Frame(Window w, bool was_created_before_window_manager) -> void;
   auto Unframe(Window w) -> void;
 
@@ -37,5 +37,5 @@ public:
 
   auto run() -> void;
 
-  ~WindowManager() = default;
+  ~WindowManager() { XCloseDisplay(display_); };
 };

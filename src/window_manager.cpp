@@ -1,4 +1,5 @@
 #include "window_manager.hpp"
+#include "client.hpp"
 
 auto WindowManager::init() -> unique_ptr<WindowManager> {
   Display *display = XOpenDisplay(nullptr);
@@ -76,11 +77,17 @@ auto WindowManager::run() -> void {
   }
 }
 
-void WindowManager::OnCreateNotify(const XCreateWindowEvent &e) {}
+auto WindowManager::OnCreateNotify(const XCreateWindowEvent &e) const -> void {
+  /*Event can be ignored*/
+}
 
-void WindowManager::OnDestroyNotify(const XDestroyWindowEvent &e) {}
+auto WindowManager::OnDestroyNotify(const XDestroyWindowEvent &e) const
+    -> void {
+  /*Event can be ignored*/
+}
 
-void WindowManager::OnConfigureRequest(const XConfigureRequestEvent &e) {
+auto WindowManager::OnConfigureRequest(const XConfigureRequestEvent &e)
+    -> void {
   XWindowChanges changes;
   changes.x = e.x;
   changes.y = e.y;
@@ -95,15 +102,18 @@ void WindowManager::OnConfigureRequest(const XConfigureRequestEvent &e) {
             << " and height: " << e.height;
 }
 
-void WindowManager::OnConfigureNotify(const XConfigureEvent &e) {}
+auto WindowManager::OnConfigureNotify(const XConfigureEvent &e) const -> void {
+  /*Event can be ignored*/
+}
 
-void WindowManager::OnMapRequest(const XMapRequestEvent &e) {
+auto WindowManager::OnMapRequest(const XMapRequestEvent &e) -> void {
   Frame(e.window, false);
 
   XMapWindow(display_, e.window);
 }
 
-void WindowManager::Frame(Window w, bool was_created_before_window_manager) {
+auto WindowManager::Frame(Window w, bool was_created_before_window_manager)
+    -> void {
   const unsigned int BORDER_WIDTH = 3;
   const unsigned long BORDER_COLOR = 0xff0000;
   const unsigned long BG_COLOR = 0x0000ff;
@@ -129,21 +139,28 @@ void WindowManager::Frame(Window w, bool was_created_before_window_manager) {
   XReparentWindow(display_, w, frame, 0, 0);
   XMapWindow(display_, frame);
 
+  auto client = std::make_unique<Client>(w, frame);
+  Client::clients_.push_back(client);
+
   LOG(INFO) << "Framed window " << w << " [" << frame << "]";
 }
 
-void WindowManager::OnMapNotify(const XMapEvent &e) {}
+auto WindowManager::OnMapNotify(const XMapEvent &e) const
+    -> void { /*Event can be ignored*/
+}
 
-void WindowManager::OnReparentNotify(const XReparentEvent &e) {}
+auto WindowManager::OnReparentNotify(const XReparentEvent &e) const -> void {
+  /*Event can be ignored*/
+}
 
-int WindowManager::OnWMDectected(Display *display, XErrorEvent *e) {
+auto WindowManager::OnWMDectected(Display *display, XErrorEvent *e) -> int {
   CHECK_EQ(static_cast<int>(e->error_code), BadAccess);
   wm_detected_ = true;
 
   return 0;
 }
 
-int WindowManager::OnXError(Display *display, XErrorEvent *e) {
+auto WindowManager::OnXError(Display *display, XErrorEvent *e) -> int {
   const int MAX_ERROR_TEXT_LENGTH = 1024;
   char error_text[MAX_ERROR_TEXT_LENGTH];
   XGetErrorText(display, e->error_code, error_text, sizeof(error_text));

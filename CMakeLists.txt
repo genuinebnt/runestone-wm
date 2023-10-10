@@ -9,7 +9,7 @@ set (CMAKE_CXX_STANDARD 20)
 find_package (glog 0.6.0 REQUIRED)
 find_package(X11 REQUIRED)
 
-add_executable(runestone ${SOURCES}/main.cpp ${SOURCES}/window_manager.cpp)
+add_executable(runestone ${SOURCES}/main.cpp ${SOURCES}/window_manager.cpp ${SOURCES}/client.cpp)
 
 target_include_directories(runestone PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
