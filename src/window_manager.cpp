@@ -1,6 +1,8 @@
 #include "window_manager.hpp"
 #include "client.hpp"
 
+#include <algorithm>
+
 auto WindowManager::init() -> unique_ptr<WindowManager> {
   Display *display = XOpenDisplay(nullptr);
   if (display == nullptr) {
@@ -139,8 +141,8 @@ auto WindowManager::Frame(Window w, bool was_created_before_window_manager)
   XReparentWindow(display_, w, frame, 0, 0);
   XMapWindow(display_, frame);
 
-  auto client = std::make_unique<Client>(w, frame);
-  Client::clients_.push_back(client);
+  Client client(w, frame);
+  Client::clients_.push_back(&client);
 
   LOG(INFO) << "Framed window " << w << " [" << frame << "]";
 }
@@ -152,6 +154,32 @@ auto WindowManager::OnMapNotify(const XMapEvent &e) const
 auto WindowManager::OnReparentNotify(const XReparentEvent &e) const -> void {
   /*Event can be ignored*/
 }
+
+auto WindowManager::OnUnmapNotify(const XUnmapEvent &e) -> void {
+  bool found = false;
+
+  for (const auto &client : Client::clients_) {
+    if (client->window_ == e.window) {
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    LOG(INFO) << "Ignore UnmapNotify for non-client window " << e.window;
+    return;
+  }
+
+  if (e.event == root_) {
+    LOG(INFO) << "Ignore UnmapNotify for reparented pre-existing window"
+              << e.window;
+    return;
+  }
+
+  Unframe(window);
+}
+
+auto Unframe(Window window) -> void {}
 
 auto WindowManager::OnWMDectected(Display *display, XErrorEvent *e) -> int {
   CHECK_EQ(static_cast<int>(e->error_code), BadAccess);

@@ -5,15 +5,14 @@
 #include <memory>
 
 class Client {
-private:
-  Window window_;
-  Window frame_;
 
 public:
+  Window window_;
+  Window frame_;
   explicit Client(Window window, Window frame)
       : window_(window), frame_(frame) {}
 
   ~Client() = default;
 
-  static std::list<std::unique_ptr<Client>> &clients_;
+  static std::list<Client *> clients_;
 };
